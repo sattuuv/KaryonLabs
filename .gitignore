@@ -39,6 +39,11 @@ yarn-error.log*
 # Firebase Studio / IDX cloud config
 .idx/
 
+# Editor / IDE configs
+.vscode/
+CLAUDE.md
+GEMINI.md
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
