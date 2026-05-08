@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { useState, useEffect, useRef } from "react";
+import CubeLogo from "./components/CubeLogo";
 
 const projects = [
   {
@@ -53,28 +55,105 @@ const projects = [
   }
 ];
 
+function ThemeToggle() {
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
+    if (savedTheme) {
+      setTheme(savedTheme);
+      document.documentElement.setAttribute("data-theme", savedTheme);
+    } else {
+      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      setTheme(systemTheme);
+      document.documentElement.setAttribute("data-theme", systemTheme);
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
+    document.documentElement.setAttribute("data-theme", newTheme);
+    localStorage.setItem("theme", newTheme);
+  };
+
+  return (
+    <button
+      onClick={toggleTheme}
+      className="theme-toggle"
+      aria-label="Toggle theme"
+    >
+      {theme === "dark" ? (
+        <svg className="theme-icon" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
+        </svg>
+      ) : (
+        <svg className="theme-icon" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M17.293 13.293A8 8 0 016.707 6.707a8.001 8.001 0 00-10.586 10.586A1 1 0 006.09 15.09l3.907-3.907a1 1 0 011.414 0l3.907 3.907a1 1 0 00.031-1.414 8.001 8.001 0 006.944-6.293z" />
+        </svg>
+      )}
+    </button>
+  );
+}
+
+function MouseBlob() {
+  const blobRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (blobRef.current) {
+        const x = e.clientX - 100;
+        const y = e.clientY - 100;
+        blobRef.current.style.transform = `translate(${x}px, ${y}px)`;
+      }
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
+  return <div ref={blobRef} className="blob-cursor" />;
+}
+
+function ParallaxBlobs() {
+  return (
+    <>
+      <div className="blob blob-1" />
+      <div className="blob blob-2" />
+      <div className="blob blob-3" />
+      <div className="blob blob-4" />
+    </>
+  );
+}
+
 function Navbar() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-gray-800 backdrop-blur-lg bg-black/50">
       <div className="modern-container">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
-              <span className="text-white font-bold text-xs">KL</span>
-            </div>
+            <img 
+              src="/logo.png" 
+              alt="Karyon Labs" 
+              className="h-8 w-auto"
+            />
             <span className="brutalist-heading text-lg">THIS IS RESEARCH LAB</span>
           </div>
           <nav className="hidden md:flex items-center gap-8">
             <Link href="#projects" className="text-gray-400 hover:text-white transition-colors text-sm font-medium">PROJECTS</Link>
             <Link href="#about" className="text-gray-400 hover:text-white transition-colors text-sm font-medium">ABOUT</Link>
             <Link href="#contact" className="text-gray-400 hover:text-white transition-colors text-sm font-medium">CONTACT</Link>
-            <Button className="brutalist-button-primary">
+            <Button className="hybrid-button-primary">
               GET STARTED
             </Button>
+            <ThemeToggle />
           </nav>
-          <Button variant="outline" className="md:hidden border-gray-700 text-gray-400">
-            MENU
-          </Button>
+          <div className="md:flex items-center gap-4">
+            <Button variant="outline" className="md:hidden border-gray-700 text-gray-400">
+              MENU
+            </Button>
+            <ThemeToggle />
+          </div>
         </div>
       </div>
     </header>
@@ -82,14 +161,29 @@ function Navbar() {
 }
 
 function Hero() {
+  const heroRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (heroRef.current) {
+        const scrolled = window.pageYOffset;
+        const parallax = scrolled * 0.05;
+        heroRef.current.style.transform = `translateY(${parallax}px)`;
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center pattern-grid overflow-hidden">
-      <div className="modern-container">
+    <section className="relative min-h-screen flex items-center justify-center pattern-subtle overflow-hidden">
+      <div ref={heroRef} className="modern-container relative z-10">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
             <div className="space-y-4">
               <Badge className="status-badge status-soon">RESEARCH OS v2.1.0</Badge>
-              <h1 className="heading-xl brutalist-heading">
+              <h1 className="heading-xl modern-heading">
                 WE BUILD
                 <br />
                 <span className="brutalist-heading-accent">DIGITAL</span>
@@ -103,10 +197,10 @@ function Hero() {
             </div>
             
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button className="brutalist-button-primary">
+              <Button className="hybrid-button-primary">
                 EXPLORE PROJECTS
               </Button>
-              <Button variant="outline" className="brutalist-button">
+              <Button variant="outline" className="hybrid-button">
                 LEARN MORE
               </Button>
             </div>
@@ -128,11 +222,11 @@ function Hero() {
           </div>
 
           <div className="relative">
-            <Card className="modern-card border-gray-800 bg-gray-900/50 backdrop-blur">
+            <Card className="brutalist-card">
               <CardContent className="p-8">
                 <div className="space-y-6">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center">
+                    <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center">
                       <span className="text-white font-bold">KL</span>
                     </div>
                     <div>
@@ -147,7 +241,7 @@ function Hero() {
                   
                   <div className="grid grid-cols-3 gap-4">
                     <div className="text-center p-3 bg-gray-800/50 rounded-lg">
-                      <div className="text-lg font-bold text-red-400">1</div>
+                      <div className="text-lg font-bold text-green-400">1</div>
                       <div className="text-xs text-gray-500 font-mono">LIVE</div>
                     </div>
                     <div className="text-center p-3 bg-gray-800/50 rounded-lg">
@@ -169,70 +263,37 @@ function Hero() {
   );
 }
 
-function ProjectsSection() {
-  return (
-    <section id="projects" className="py-24 px-4 pattern-dots">
-      <div className="modern-container">
-        <div className="text-center mb-16">
-          <Badge className="status-badge status-soon mb-4">PROJECT PORTFOLIO</Badge>
-          <h2 className="heading-lg brutalist-heading mb-4">
-            OUR <span className="brutalist-heading-accent">VENTURES</span>
-          </h2>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Each product is a fully independent venture with its own brand, domain, and roadmap.
-          </p>
-        </div>
-        
-        <div className="modern-grid modern-grid-3">
-          {projects.map((project, index) => (
-            <Card key={project.id} className={`modern-card group hover:border-red-500 ${index === 0 ? 'md:col-span-2' : ''}`}>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="brutalist-heading text-lg mb-2">
-                      {project.title}
-                    </CardTitle>
-                    <p className="text-gray-400 text-sm font-mono">
-                      {project.description}
-                    </p>
-                  </div>
-                  <Badge className={`status-badge status-${project.statusType}`}>
-                    {project.status}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex flex-wrap gap-2">
-                    {project.tech.map((tech) => (
-                      <span key={tech} className="px-2 py-1 bg-gray-800 text-gray-400 text-xs font-mono rounded">
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-                  
-                  <Button className="w-full brutalist-button">
-                    {project.statusType === 'live' ? 'VISIT SITE' : 'VIEW DETAILS'}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function AboutSection() {
+  const aboutRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (aboutRef.current) {
+        const scrolled = window.pageYOffset;
+        const speed = 0.1;
+        const yPos = -(scrolled * speed);
+        aboutRef.current.style.transform = `translateY(${yPos}px)`;
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <section id="about" className="py-24 px-4 bg-gray-900/50">
-      <div className="modern-container">
+    <>
+      {/* Smooth transition section */}
+      <div className="relative h-32 bg-gradient-to-b from-black via-gray-900/50 to-gray-900/50">
+        <div className="absolute inset-0 bg-gradient-to-t from-transparent to-black/20"></div>
+      </div>
+      
+      <section id="about" ref={aboutRef} className="py-24 px-4 bg-gradient-to-b from-gray-900/50 via-gray-900/30 to-gray-900/50 relative overflow-hidden">
+            <div className="modern-container relative z-10">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
             <div>
               <Badge className="status-badge status-soon mb-4">ABOUT US</Badge>
-              <h2 className="heading-lg brutalist-heading mb-4">
+              <h2 className="heading-lg modern-heading mb-4">
                 RESEARCH & <span className="brutalist-heading-accent">DEVELOPMENT</span>
               </h2>
               <p className="text-xl text-gray-400 leading-relaxed mb-6">
@@ -261,7 +322,7 @@ function AboutSection() {
           </div>
           
           <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-purple-500/20 rounded-2xl blur-3xl"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-green-500/20 rounded-2xl blur-3xl"></div>
             <Card className="modern-card relative border-gray-800 bg-gray-900/50 backdrop-blur">
               <CardContent className="p-8">
                 <div className="space-y-6">
@@ -271,8 +332,8 @@ function AboutSection() {
                   
                   <div className="space-y-4">
                     <div className="flex items-center gap-4">
-                      <div className="w-8 h-8 bg-red-500/20 rounded-lg flex items-center justify-center">
-                        <div className="w-4 h-4 bg-red-500 rounded"></div>
+                      <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
+                        <div className="w-4 h-4 bg-green-500 rounded"></div>
                       </div>
                       <div>
                         <h4 className="font-semibold text-white">Web Applications</h4>
@@ -307,6 +368,78 @@ function AboutSection() {
         </div>
       </div>
     </section>
+    </>
+  );
+}
+
+function ProjectsSection() {
+  const projectsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (projectsRef.current) {
+        const scrolled = window.pageYOffset;
+        const speed = 0.08;
+        const yPos = -(scrolled * speed);
+        projectsRef.current.style.transform = `translateY(${yPos}px)`;
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  return (
+    <section id="projects" ref={projectsRef} className="py-24 px-4 pattern-bold relative overflow-hidden">
+            <div className="modern-container relative z-10">
+        <div className="text-center mb-16">
+          <Badge className="status-badge status-soon mb-4">PROJECT PORTFOLIO</Badge>
+          <h2 className="heading-lg brutalist-heading mb-4">
+            OUR <span className="brutalist-heading-accent">VENTURES</span>
+          </h2>
+          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+            Each product is a fully independent venture with its own brand, domain, and roadmap.
+          </p>
+        </div>
+        
+        <div className="modern-grid modern-grid-3">
+          {projects.map((project, index) => (
+            <Card key={project.id} className={`modern-card group ${index === 0 ? 'md:col-span-2' : ''}`}>
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="brutalist-heading text-lg mb-2">
+                      {project.title}
+                    </CardTitle>
+                    <p className="text-gray-400 text-sm font-mono">
+                      {project.description}
+                    </p>
+                  </div>
+                  <Badge className={`status-badge status-${project.statusType === 'live' ? 'live' : 'soon'}`}>
+                    {project.status}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex flex-wrap gap-2">
+                    {project.tech.map((tech) => (
+                      <span key={tech} className="px-2 py-1 bg-gray-800 text-gray-400 text-xs font-mono rounded">
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                  
+                  <Button className="w-full hybrid-button">
+                    {project.statusType === 'live' ? 'VISIT SITE' : 'VIEW DETAILS'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -316,8 +449,8 @@ function Footer() {
       <div className="modern-container">
         <div className="grid md:grid-cols-4 gap-8 mb-8">
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-6 h-6 bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
                 <span className="text-white font-bold text-xs">KL</span>
               </div>
               <span className="brutalist-heading text-sm">THIS IS RESEARCH LAB</span>
@@ -373,10 +506,12 @@ function Footer() {
 export default function Home() {
   return (
     <div className="min-h-screen bg-black text-white">
+      <CubeLogo />
+      <MouseBlob />
       <Navbar />
       <Hero />
-      <ProjectsSection />
       <AboutSection />
+      <ProjectsSection />
       <Footer />
     </div>
   );
