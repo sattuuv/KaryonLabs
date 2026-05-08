@@ -7,6 +7,7 @@ const nextConfig = {
   },
   basePath: '/KaryonLabs',
   assetPrefix: '/KaryonLabs/',
+  distDir: 'out'
 }
 
 module.exports = nextConfig

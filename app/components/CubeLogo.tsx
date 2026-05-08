@@ -17,7 +17,7 @@ export default function CubeLogo() {
   const [cubes, setCubes] = useState<Cube[]>([]);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isMoving, setIsMoving] = useState(false);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | null>(null);
   const lastMoveTime = useRef<number>(Date.now());
 
   useEffect(() => {
