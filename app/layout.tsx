@@ -13,9 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "KARYON LABS — Research OS v2.1.0",
-  description:
-    "Project Dock: Central hub for ClipVault, KY eSports, MLBB Stratos, Karyon Forge, and Karyon Review.",
+  title: "This is Research Lab",
+  description: "We build stuff. Some of it works.",
 };
 
 export default function RootLayout({
@@ -26,7 +25,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full no-antialiasing`}
     >
       <body className="h-full">{children}</body>
     </html>
